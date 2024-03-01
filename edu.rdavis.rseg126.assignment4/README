@@ -1,0 +1,10 @@
+This zip file contains all of the files required to build and run the Sieve of Eratosthenes program and its junit unit tests.
+
+The build.xml file is the ant build file.
+
+The src directory contains the class files for the program and unit tests.
+
+The lib directory contains the junit jars that are required for the unit tests.
+
+The resources directory contains a text file with prime numbers for the unit test's use.
+

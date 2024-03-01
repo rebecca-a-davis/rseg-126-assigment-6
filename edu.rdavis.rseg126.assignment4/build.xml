@@ -1,0 +1,74 @@
+<project name="RSEG126Assignment4">
+  <!-- absolute paths for various directories we'll be working with -->
+  <property name="src_dir" location="src"/>
+  <property name="resources_dir" location="resources"/>
+  <property name="build_dir" location="build"/>
+  <property name="dist_dir" location="dist"/>
+  <!-- relative paths so we only build what we need -->
+  <property name="main_dir" value="edu/rdavis/rseg126/assignment4/main"/>
+  <property name="test_dir" value="edu/rdavis/rseg126/assignment4/test"/>
+
+  <!-- include the source files and the necessary junit jar files -->
+  <path id="test_classpath">
+    <pathelement location="lib/junit-4.12.jar"/>
+    <pathelement location="lib/hamcrest-core-1.3.jar"/>
+    <pathelement location="${src_dir}/${main_dir}"/>
+  </path>
+
+  <!-- make the directories we need (build and dist) -->
+  <target name="setup" description="create needed folders for building and running tests">
+  	<mkdir dir="${build_dir}"/>
+    <mkdir dir="${dist_dir}"/>
+  </target>
+  <!-- clean up the directories we created in setup -->
+  <target name="clean" description="clean up directories we created">
+    <delete dir="${build_dir}"/>
+    <delete dir="${dist_dir}"/>
+  </target>
+
+  <!-- extra unit test setup stuff -->
+  <target name="setup-test" depends="setup" description="setup steps required just for tests">
+    <!-- copy over our resource files for the tests -->
+    <copy todir="${build_dir}/resources">
+      <fileset dir="${resources_dir}" includes="**"/>
+    </copy>
+  </target>
+
+  <!-- compile the sieve and export it to a jar for easy sharing -->
+  <target name="build" depends="setup" description="compile sieve program">
+    <javac srcdir="${src_dir}/${main_dir}" destdir="${build_dir}" includeantruntime="false"/>
+    <!-- create an executable jar file for just the classes in the "main" package,
+         so we don't include unnecessary unit test files -->
+    <jar destfile="${dist_dir}/sieve.jar" basedir="${build_dir}" includes="${main_dir}/**">
+      <manifest>
+        <attribute name="Main-Class" value="edu.rdavis.rseg126.assignment4.main.Main"/>
+      </manifest>
+    </jar>
+  </target>
+
+  <!-- compile the unit test files -->
+  <target name="build-test" depends="build" description="compile unit tests">
+    <javac srcdir="${src_dir}/${test_dir}" destdir="${build_dir}" includeantruntime="false">
+      <classpath refid="test_classpath"/>
+    </javac>
+  </target>
+
+  <!-- run unit tests -->
+  <target name="test" depends="build-test,setup-test">
+    <!-- "haltonfailure" means we stop trying to run further tests if one fails;
+         "fork" causes junit to run in a separate invication of jvm -->
+    <junit haltonfailure="yes" fork="true">
+      <!-- prints out all of the details to the terminal (stdout) in case of an error -->
+      <formatter type="plain" usefile="false"/>
+      <!-- include the junit jars and the compiled .class files -->
+      <classpath>
+        <path refid="test_classpath"/>
+        <pathelement location="${build_dir}"/>
+      </classpath>
+      <!-- run every test found with a name that has "Test" in it -->
+      <batchtest>
+        <fileset dir="${src_dir}" includes="**/*Test*.java" />
+      </batchtest>
+    </junit>
+  </target>
+</project>
